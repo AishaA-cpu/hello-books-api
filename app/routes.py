@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify # python supports comma separated importing 
+from flask import Blueprint, jsonify, make_response, request # python supports comma separated importing
+from app import db
+from app.models.book import Book
 
 
 # create the blue print in routes.py
@@ -33,47 +35,113 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 #                                     # define an end point
 
 
+@books_bp.route("", methods=["POST" , "GET"])
+def handle_books():
+    request_body = request.get_json() # this allows us access the body in the request sent
+    if request.method == "POST":
+        #request_body = request.get_json() # makes sense to try to retrieve RB inside a post request?
+        if "title" not in request_body or "description" not in request_body:
+            return make_response("Invalid request", 400)
+        
+        new_book = Book(
+            title = request_body["title"],
+            description = request_body["description"] # if we left out description in the body of our request
+        )  # we get a key error becase new book will be trying to access description when there is non
+                # think of error handling, handle the code, error, etc 
+                # it is important to do error handling and request handling because we dont want garbage in out DB
+        db.session.add(new_book) # staging the changes we are making i.e the new book instance
+        db.session.commit() #commit the changes made to the database
+
+        return make_response(
+            f"Book {new_book.title} created", 201 #confirm to user that request was created and successful
+        ) # message can also be returned without using the "make_response object"
+        # default is 200 for successful request so if we left of 201 the response will carry 200 status code
+        # 201 says request was created 
+
+#@books_bp.route("", methods = ["GET"])
+#def handle_books(): # dint pass book in here, because books is already definied as a global variable
+    elif request.method == "GET":
+        books_response = []
+        books = Book.query.all() # book is using th query.all method inherited from the db.Model
+        #book_json_object = {}
+        
+        for book in books:
+            # book_json_object["id"] = book.id
+            # book_json_object["title"] = book.title
+            # book_json_object["description"] = book.description
+            # books_response.append(book_json_object)
+
+            books_response.append(
+                {
+                    "id": book.id,
+                    "title": book.title,
+                    "description": book.description
+                }
+            )
+        
+        return jsonify(books_response) # here, jsonify turns a list into a json object which still looks like a list tbh.
+
+
+@books_bp.route("/<book_id>", methods = ["GET"]) # in flask we use <> to specifiy params in the route method, here we spec. that route should take the book is, per  
+def handle_one_book(book_id):
+                # RESTful convensions this says that we want to get one item from a resource, the name in the funct should match
+    book = Book.query.get(book_id)                                                   # the params def, note that the data passed into the param on line 72 will be a string we must convert or else
+    #book_id = int(book_id)   # get method takes a parameter and handles the id as a string     # line 77 wont eval to true remeber you can use type() as a debugger
+    # for book in books:
+    #     if book.id == book_id:
+    #         return {
+    #             "title" : book.title,
+    #             "id" : book.id,
+    #             "description" : book.description
+    #         }, 200
+    #try:
+    # if book == None:
+    #     return f"the book is not available"
+    # else:
+    try:
+        return {
+                "title" : book.title,
+                "id" : book.id,
+                "description" : book.description
+        }
+    except:
+        book is None
+        #return "The book is not available"
+        return make_response(f" Book {book_id} is not found", 404)
+    
+    # except:
+    #     #type(book) == None
+    #     TypeError
+    #     return{
+    #         f"book is not available"
+    #     }
+    #return ("oh oh! the book is not available homie")
 
 
 
 
-# class Book:
-#     def __init__(self, id, title, description):
-#         self.id = id
-#         self.title = title
-#         self.description = description                             
 
 
-# books = [ # temp hard coded database
-#     Book(1, "Fictional Book Title", "A fantasy novel set in an imaginary world."),
-#     Book(2, "Fictional Book Title", "A fantasy novel set in an imaginary world."),
-#     Book(3, "Fictional Book Title", "A fantasy novel set in an imaginary world.")
-# ]
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # hello_world_bp = Blueprint("hello_world", __name__) # hello_world is the name of the blueprint
 # # __name__ is the import name helps flask identify where the root folder of the project is 
 
 
-# @books_bp.route("", methods = ["GET"])
-# def handle_books(): # dint pass book in here, because books is already definied as a global variable
-#     books_response = []
-#     #book_json_object = {}
-#     for book in books:
-#         # book_json_object["id"] = book.id
-#         # book_json_object["title"] = book.title
-#         # book_json_object["description"] = book.description
-#         # books_response.append(book_json_object)
 
-#         books_response.append(
-#             {
-#                 "id": book.id,
-#                 "title": book.title,
-#                 "description": book.description
-#             }
-#         )
-    
-#     return jsonify(books_response) # here, jsonify turns a list into a json object which still looks like a list tbh.
 # id = 1
 # #route = "/" + str(id)
 # #@books_bp.route(route, methods = ["GET"])
@@ -90,11 +158,32 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 #             }, 200
 #     return ("oh oh! the book is not available homie")
 
+
+
+
+# class Book:
+#     def __init__(self, id, title, description):
+#         self.id = id
+#         self.title = title
+#         self.description = description                             
+
+
+
+# books = [ # temp hard coded database
+#     Book(1, "Fictional Book Title", "A fantasy novel set in an imaginary world."),
+#     Book(2, "Fictional Book Title", "A fantasy novel set in an imaginary world."),
+#     Book(3, "Fictional Book Title", "A fantasy novel set in an imaginary world.")
+# ]
+
+
+
 # @hello_world_bp.route("/hello-world", methods = ["GET"]) # define the name of your end point as the first arg. remeber it needs to align with the resource
 # def get_hello_world():                                  # hellow_world_bp here remember is an instance of BP and has a method route that helps set the end point
 #     my_response = "Hello World"         # define the method, here we use a GET because we want client to only be able to get from this endpoint
 #     return my_response            # to run it, you need to run the server with "flask run"
                             
+
+
 
 # @hello_world_bp.route("/hello-world-json", methods = ["GET"]) 
 # def get_hello_world_json():                                                         
@@ -104,11 +193,3 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 #         "project": "flask Api",
 #         "mood": "Whoop!"
 #     }, 200  
-
-
-
-
-
-
-
-

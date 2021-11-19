@@ -17,10 +17,17 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:postgres@localhost:5432/hello_books_development' # tells flask to connect to database using psycopg2
 
+
+    # import models
+    from app.models.book import Book
+
     db.init_app(app) # connects db to flask app
     migrate.init_app(app, db) # connects migrate to flask app and db
     
-    from app.models.book import Book
+    from .routes import books_bp
+
+    # register the blueprint
+    app.register_blueprint(books_bp)
 
     #from .routes import hello_world_bp # essentially, we are telling the flask framework to import the blueprint we created
 
@@ -55,10 +62,3 @@ def create_app(test_config=None):
 
 
 
-# def revolve(list, shift):
-#     list = list[-shift:] + list[:-shift]
-#     print(list)
-
-# arr = [1, 2, 3, 4, 5, 6, 7]
-
-# revolve(arr, 3)
