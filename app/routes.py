@@ -41,7 +41,7 @@ def handle_books():
     if request.method == "POST":
         #request_body = request.get_json() # makes sense to try to retrieve RB inside a post request?
         if "title" not in request_body or "description" not in request_body:
-            return make_response("Invalid request", 400)
+            return make_response("Invalid request, you must include a title and description", 400)
         
         new_book = Book(
             title = request_body["title"],
@@ -99,8 +99,8 @@ def handle_one_book(book_id):
     # if book == None:
     #     return f"the book is not available"
     # else:
+    book = Book.query.get(book_id) 
     if request.method == "GET":
-        book = Book.query.get(book_id) 
         try:
             return {
                     "title" : book.title,
@@ -112,7 +112,6 @@ def handle_one_book(book_id):
             return make_response(f" Book {book_id} is not found", 404)
 
     if request.method == "PUT":
-        book = Book.query.get(book_id) 
         form_data = request.get_json() 
         if "title" not in form_data or "description" not in form_data:
             return make_response(f"Invalid request, requires both a title and description", 400)
@@ -122,7 +121,7 @@ def handle_one_book(book_id):
                 book.description = form_data["description"]
 
                 # save action
-                db.session.add(book)
+                #db.session.add(book)
                 db.session.commit()
                 return make_response(f"Book #{book.id} successfully updated", 200)
             except:
@@ -130,7 +129,6 @@ def handle_one_book(book_id):
                 return make_response(f"{book.id} does not exist", 404)
         
     if request.method == "DELETE":
-        book = Book.query.get(book_id) 
         try:
             book_to_delete = book
 
