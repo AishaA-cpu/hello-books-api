@@ -62,7 +62,12 @@ def handle_books():
 #def handle_books(): # dint pass book in here, because books is already definied as a global variable
     elif request.method == "GET":
         books_response = []
-        books = Book.query.all() # book is using th query.all method inherited from the db.Model
+
+        title_query = request.args.get("title") # get query params from request, 
+        if title_query != None: # check if there is a title, this works for checking with title 
+            books = Book.query.filter_by(title = title_query) # filter by title column and assign to books 
+        else:
+            books = Book.query.all() # book is using th query.all method inherited from the db.Model
         #book_json_object = {}
         
         for book in books:
@@ -148,35 +153,7 @@ def handle_one_book(book_id):
 #                 # RESTful convensions this says that we want to get one item from a resource, the name in the funct should match
 #     book = Book.query.get(book_id)                                                   # the params def, note that the data passed into the param on line 72 will be a string we must convert or else
 #     #book_id = int(book_id)   # get method takes a parameter and handles the id as a string     # line 77 wont eval to true remeber you can use type() as a debugger
-#     # for book in books:
-#     #     if book.id == book_id:
-#     #         return {
-#     #             "title" : book.title,
-#     #             "id" : book.id,
-#     #             "description" : book.description
-#     #         }, 200
-#     #try:
-#     # if book == None:
-#     #     return f"the book is not available"
-#     # else:
-#     try:
-#         return {
-#                 "title" : book.title,
-#                 "id" : book.id,
-#                 "description" : book.description
-#         }
-#     except:
-#         book is None
-#         #return "The book is not available"
-#         return make_response(f" Book {book_id} is not found", 404)
-    
-#     # except:
-#     #     #type(book) == None
-#     #     TypeError
-#     #     return{
-#     #         f"book is not available"
-#     #     }
-#     #return ("oh oh! the book is not available homie")
+
 
 
 

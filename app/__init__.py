@@ -1,7 +1,8 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
+from dotenv import load_dotenv # py-dotenv specifies to import .env like this
+import os # this module is imported to read enviroment variables
 # Our database development workflow will be as follows:
 
 # Set up the database on the Flask end once
@@ -10,14 +11,21 @@ from flask_migrate import Migrate
 
 db = SQLAlchemy() #create an instance of SQLAlchemy
 migrate = Migrate() # Create and instance of migrate to develop instructions and make chages to the DB
+load_dotenv() # import packages from the .env file so that os can see them
 
-def create_app(test_config=None):
+
+def create_app(test_config=None): # test_config is set to None as default so that it is not req.
     app = Flask(__name__)
 
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:postgres@localhost:5432/hello_books_development' # tells flask to connect to database using psycopg2
-
-
+    
+    if test_config is None:
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI') # tells flask to connect to database using psycopg2
+    else:
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_TEST_URI ') # tells flask to connect to database using psycopg2
+    
     # import models
     from app.models.book import Book
 
