@@ -18,13 +18,13 @@ def create_app(test_config=None): # test_config is set to None as default so tha
     app = Flask(__name__)
 
     
-    if test_config is None:
+    if not test_config:
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI') # tells flask to connect to database using psycopg2
     else:
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_TEST_URI ') # tells flask to connect to database using psycopg2
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_TEST_DATABASE_URI') # tells flask to connect to database using psycopg2
     
     # import models
     from app.models.book import Book
