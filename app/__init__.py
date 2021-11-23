@@ -19,9 +19,11 @@ def create_app(test_config=None): # test_config is set to None as default so tha
 
     
     if not test_config:
+        print("printing from dev database")
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI') # tells flask to connect to database using psycopg2
     else:
+        print("printing from test database")
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_TEST_DATABASE_URI') # tells flask to connect to database using psycopg2

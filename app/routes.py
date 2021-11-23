@@ -53,7 +53,9 @@ def handle_books():
         db.session.commit() #commit the changes made to the database
 
         return make_response(
-            f"Book {new_book.title} created", 201 #confirm to user that request was created and successful
+            #{"key": "value"}, 201
+            f"Book {new_book.title} created", 201 # this returns None when tested, why? 
+            # #confirm to user that request was created and successful
         ) # message can also be returned without using the "make_response object"
         # default is 200 for successful request so if we left of 201 the response will carry 200 status code
         # 201 says request was created 

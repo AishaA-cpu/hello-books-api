@@ -37,3 +37,8 @@ def two_saved_books(app): # call the app fixture, create a fixture that saves tw
     db.session.add_all([ocean_book, mountain_book]) # add the books to the database, this is an alternative to add all instances as a list
     # instead of adding one after the other 
     db.session.commit()  #commit the book to the database
+
+
+
+
+
