@@ -30,15 +30,17 @@ def create_app(test_config=None): # test_config is set to None as default so tha
     
     # import models
     from app.models.book import Book
+    from app.models.author import Author
 
     db.init_app(app) # connects db to flask app
     migrate.init_app(app, db) # connects migrate to flask app and db
     
-    from .routes import books_bp
-
+    from .routes import books_bp, authors_bp
+    
+    
     # register the blueprint
     app.register_blueprint(books_bp)
-
+    app.register_blueprint(authors_bp)
     #from .routes import hello_world_bp # essentially, we are telling the flask framework to import the blueprint we created
 
     

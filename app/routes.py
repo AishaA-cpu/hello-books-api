@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, make_response, request # python supports comma separated importing
 from app import db
 from app.models.book import Book
-
+from app.models.author import Author
 
 # create the blue print in routes.py
 # define the function to create the app in __init__.py 
@@ -34,6 +34,7 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 #                                     # it is typical for all restful routes to have a url prefix
 #                                     # define an end point
 
+authors_bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
 
 @books_bp.route("", methods=["POST" , "GET"])
 def handle_books():
@@ -147,8 +148,45 @@ def handle_one_book(book_id):
             book is None
             return make_response(f" Book {book_id} is not found", 404)
 
-    
+@authors_bp.route("", methods=["POST" , "GET"])
+def handle_authors():
+    request_body = request.get_json() 
+    if request.method == "POST":
+        
+        if "name" not in request_body:
+            return make_response("Invalid request, you must include a name and description", 400)
+        
+        new_author = Author(
+            name = request_body["name"],
+            description = request_body["description"] 
+        )  
+        db.session.add(new_author) 
+        db.session.commit() 
 
+        return make_response(
+            f"Book {new_author.name} created", 201 
+        ) 
+
+
+    elif request.method == "GET":
+        author_response = []
+
+        name_query = request.args.get("name") 
+        if name_query != None: 
+            authors = Author.query.filter_by(title = name_query) 
+        else:
+            authors  = Author.query.all() 
+
+        
+        for author in authors:
+            author_response.append(
+                {
+                    "id": author.id,
+                    "name": author.name,
+                }
+            )
+        
+        return jsonify(author_response)
 
 # @books_bp.route("/<book_id>", methods = ["GET"]) # in flask we use <> to specifiy params in the route method, here we spec. that route should take the book is, per  
 # def handle_one_book(book_id):
