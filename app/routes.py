@@ -34,7 +34,7 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 #                                     # it is typical for all restful routes to have a url prefix
 #                                     # define an end point
 
-authors_bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
+
 
 @books_bp.route("", methods=["POST" , "GET"])
 def handle_books():
@@ -148,23 +148,24 @@ def handle_one_book(book_id):
             book is None
             return make_response(f" Book {book_id} is not found", 404)
 
+authors_bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
+
 @authors_bp.route("", methods=["POST" , "GET"])
 def handle_authors():
     request_body = request.get_json() 
     if request.method == "POST":
         
         if "name" not in request_body:
-            return make_response("Invalid request, you must include a name and description", 400)
+            return make_response("Invalid request, you must include a name", 400)
         
         new_author = Author(
-            name = request_body["name"],
-            description = request_body["description"] 
+            name = request_body["name"]
         )  
         db.session.add(new_author) 
         db.session.commit() 
 
         return make_response(
-            f"Book {new_author.name} created", 201 
+            f"Author {new_author.name} created", 201 
         ) 
 
 
@@ -194,12 +195,39 @@ def handle_authors():
 #     book = Book.query.get(book_id)                                                   # the params def, note that the data passed into the param on line 72 will be a string we must convert or else
 #     #book_id = int(book_id)   # get method takes a parameter and handles the id as a string     # line 77 wont eval to true remeber you can use type() as a debugger
 
+@authors_bp.route("/<author_id>/books", methods = ["POST", "GET"])
+def handle_authors_books(author_id):
+    author = Author.query.get(author_id)
+    if author is None:
+        return make_response("Author not found", 404)
+    if request.method == "POST":
+        request_body = request.get_json()
+        new_book = Book(
+            title = request_body["title"],
+            description = request_body["description"],
+            author = author
+        )
 
+        db.session.add(new_book)
+        db.session.commit()
+        return make_response(f"Book {new_book.title} by {new_book.author.name} successfully created", 201)
 
+    elif request.method == "GET":
+        book_response = []
+        
+        books = Book.query.filter_by(author_id = author_id)
 
+        for book in books:
+            book_response.append(
+                {
+                    "title" : book.title,
+                    "description": book.description,
+                    "id" : book.id,
+                    "author": book.author.name
+                }
+            )
 
-
-
+        return jsonify(book_response, 200)
 
 
 

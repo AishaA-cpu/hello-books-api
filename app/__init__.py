@@ -19,11 +19,9 @@ def create_app(test_config=None): # test_config is set to None as default so tha
 
     
     if not test_config:
-        print("printing from dev database")
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI') # tells flask to connect to database using psycopg2
     else:
-        print("printing from test database")
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  #configure settings for SQLA
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_TEST_DATABASE_URI') # tells flask to connect to database using psycopg2
@@ -37,14 +35,10 @@ def create_app(test_config=None): # test_config is set to None as default so tha
     
     from .routes import books_bp, authors_bp
     
-    
     # register the blueprint
     app.register_blueprint(books_bp)
     app.register_blueprint(authors_bp)
     #from .routes import hello_world_bp # essentially, we are telling the flask framework to import the blueprint we created
-
-    
-
 
     #app.register_blueprint(hello_world_bp) # we are telling flask to register the blueprint we created so the server knows about it so it knows to use
                                         # the blue print we created for our routes/endpoints
