@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, make_response, request # python supports c
 from app import db
 from app.models.book import Book
 from app.models.author import Author
+from app.models.genre import Genre
 
 # create the blue print in routes.py
 # define the function to create the app in __init__.py 
@@ -34,6 +35,9 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 #                                     # it is typical for all restful routes to have a url prefix
 #                                     # define an end point
 
+
+authors_bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
+genres_bp = Blueprint("genre_bp", __name__, url_prefix="/genres")
 
 
 @books_bp.route("", methods=["POST" , "GET"])
@@ -148,7 +152,7 @@ def handle_one_book(book_id):
             book is None
             return make_response(f" Book {book_id} is not found", 404)
 
-authors_bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
+
 
 @authors_bp.route("", methods=["POST" , "GET"])
 def handle_authors():
@@ -174,7 +178,7 @@ def handle_authors():
 
         name_query = request.args.get("name") 
         if name_query != None: 
-            authors = Author.query.filter_by(title = name_query) 
+            authors = Author.query.filter_by(name = name_query) 
         else:
             authors  = Author.query.all() 
 
@@ -214,10 +218,8 @@ def handle_authors_books(author_id):
 
     elif request.method == "GET":
         book_response = []
-        
-        books = Book.query.filter_by(author_id = author_id)
 
-        for book in books:
+        for book in author.books: # author.books is a collection of author's children
             book_response.append(
                 {
                     "title" : book.title,
@@ -226,8 +228,55 @@ def handle_authors_books(author_id):
                     "author": book.author.name
                 }
             )
+        
+        # books = Book.query.filter_by(author_id = author_id)
+
+        # for book in books:
+        #     book_response.append(
+        #         {
+        #             "title" : book.title,
+        #             "description": book.description,
+        #             "id" : book.id,
+        #             "author": book.author.name
+        #         }
+        #     )
 
         return jsonify(book_response, 200)
+
+@genres_bp.route("", methods=["GET", "POST"])
+def handle_genres():
+    requests_body = request.get_json()
+    genre_parameter = request.args.get("name")
+
+    if request.method == "GET":
+        genre_response = []
+        if genre_parameter:
+            genres = Genre.query.filter_by(name = genre_parameter )
+
+        else:
+            genres = Genre.query.all()
+
+        for genre in genres:
+            genre_response.append({
+                "id" : genre.id,
+                "name": genre.name
+            }
+                
+        )
+        return jsonify(genre_response, 200)
+
+    elif request.method == "POST":
+        if "name" not in requests_body:
+            return make_response("invalid request, name must be included", 400)
+
+        new_genre = Genre(
+            name = requests_body["name"]
+        )
+
+        db.session.add(new_genre)
+        db.session.commit()
+
+        return make_response(f"new genre {new_genre.name} successfully created", 201)
 
 
 
