@@ -3,6 +3,7 @@ from app import db
 from app.models.book import Book
 from app.models.author import Author
 from app.models.genre import Genre
+from app.models.book_genres import BookGenre
 
 # create the blue print in routes.py
 # define the function to create the app in __init__.py 
@@ -38,6 +39,7 @@ books_bp = Blueprint("books_bp", __name__,url_prefix="/books")# blueprint instan
 
 authors_bp = Blueprint("authors_bp", __name__, url_prefix="/authors")
 genres_bp = Blueprint("genre_bp", __name__, url_prefix="/genres")
+
 
 
 @books_bp.route("", methods=["POST" , "GET"])
@@ -98,27 +100,10 @@ def handle_books():
 def handle_one_book(book_id):
                 # RESTful convensions this says that we want to get one item from a resource, the name in the funct should match
 
-    #request_body = request.get_json()                                                # the params def, note that the data passed into the param on line 72 will be a string we must convert or else
-    #book_id = int(book_id)   # get method takes a parameter and handles the id as a string     # line 77 wont eval to true remeber you can use type() as a debugger
-    # for book in books:
-    #     if book.id == book_id:
-    #         return {
-    #             "title" : book.title,
-    #             "id" : book.id,
-    #             "description" : book.description
-    #         }, 200
-    #try:
-    # if book == None:
-    #     return f"the book is not available"
-    # else:
     book = Book.query.get(book_id) 
     if request.method == "GET":
         try:
-            return {
-                    "title" : book.title,
-                    "id" : book.id,
-                    "description" : book.description
-            }
+            return book.to_dict()
         except:
             book is None
             return make_response(f" Book {book_id} is not found", 404)
@@ -151,6 +136,47 @@ def handle_one_book(book_id):
         except:
             book is None
             return make_response(f" Book {book_id} is not found", 404)
+
+@books_bp.route("/<book_id>/assign_genres", methods = ["PATCH"])
+def handle_book_genres(book_id):
+    # request_body = request.get_json()
+    # requested_genres = request_body["genre"]
+
+    # book = Book.query.get(book_id)
+    # if book is None:
+    #     return make_response(f"Book # {book.id} not found", 404)
+
+    # genres = Genre.query.all()
+
+    # list_of_genres_with_id = []
+
+    # for genre in genres:
+    #     if genre.id in requested_genres:
+    #         list_of_genres_with_id.append(genre.name)
+    
+    # for id in requested_genres:
+    #     db.session.add(
+    #             BookGenre(
+    #                 book_id = book_id,
+    #                 genre_id = id
+    #         )
+    #     )
+    #     db.session.commit()
+    # return make_response(f"book {book.title} has been updated with the genre", 200)
+    book = Book.query.get(book_id)
+
+    if book is None:
+        return make_response(f"Book #{book.id} not found", 404)
+
+    request_body = request.get_json()
+
+    for id in request_body["genre"]:
+        book.genres.append(Genre.query.get(id))
+
+    db.session.commit()
+
+    return make_response("Genres successfully added", 200)
+
 
 
 
